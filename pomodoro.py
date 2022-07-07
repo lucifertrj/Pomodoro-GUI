@@ -1,69 +1,47 @@
 import tkinter as tk
-from tkinter import messagebox
-from PIL import Image, ImageTk
-from playsound import playsound
+import pygame
 import time
+import tkinter.messagebox as msg
 
-class Pomodoro:
-    def __init__(self,root):
-        self.root = root
-
-    def work_break(self,timer):
-        minutes,seconds = divmod(timer,60)
-        self.min.set(f"{minutes:02d}")
-        self.sec.set(f"{seconds:02d}")
-        self.root.update()
+def main_clock(total_minutes,heading,message):
+    total_secs = int(total_minutes * 60)
+    while True:
+        sec = total_secs%60
+        min = total_secs//60
+        #min, sec = divmod(total_secs,60)
         time.sleep(1)
+        label_time.config(text=f"{min}:{sec}")
+        total_secs = total_secs-1
+        if total_secs < 0:
+            pygame.mixer.music.play(1)
+            msg.showinfo(heading, message)
+            break
+        root.update()
 
-    def work(self):
-        timer = 25*60
-        while timer>=0:
-            pomo.work_break(timer)
-            if timer == 0:
-                playsound("sound.ogg")
-                messagebox.showinfo("Good Job","Take A Break, \nClick Break Button")
-            timer -= 1
+def work_clock():
+    main_clock(25,"Take a Break", "Click the break button to start the break timer")
 
-    def break_(self):
-        timer = 5*60
-        while timer>=0:
-            pomo.work_break(timer)
-            if timer == 0:
-                playsound("sound.ogg")
-                messagebox.showinfo("Times Up","Get Back To Work, \nClick Work Button")
-            timer -= 1
+def break_clock():
+    main_clock(5,"Go back to work", "Click the work button to start the work timer")
 
-    def main(self):
-        #GUI window confirguation
-        self.root.geometry("450x455")
-        self.root.resizable(False,False)
-        self.root.title("Pomodoro Timer")
+try:
+    pygame.mixer.init()
+    pygame.mixer.music.load("sound.ogg")
+except pygame.error:
+    print("Download sound.ogg or add any .ogg music file")
 
-        #label
-        self.min = tk.StringVar(self.root)
-        self.min.set("25")
-        self.sec = tk.StringVar(self.root)
-        self.sec.set("00")
+root = tk.Tk()
+root.geometry("300x300+470+180")
+root.resizable(False, False)
+root.title("Pomodoro")
 
-        self.min_label = tk.Label(self.root,textvariable=self.min,font=("arial",22,"bold"),bg="red",fg='black')
-        self.min_label.pack()
+canvas = tk.Canvas(bg="red")
+canvas.place(x=-1, y=-1, width=330, height=330)
 
-        self.sec_label = tk.Label(self.root,textvariable=self.sec,font=("arial",22,"bold"),bg="black",fg='white')
-        self.sec_label.pack()
+label_time = tk.Label(text="25:00",font=("arial",80,"bold"))
+label_time.pack(fill="y",pady=20,padx=6)
 
-        #add background image for GUI using Canvas widget
-        canvas= tk.Canvas(self.root)
-        canvas.pack(expand=True,fill="both")
-        img = Image.open('pomodoro.jpg')
-        bg= ImageTk.PhotoImage(img)
-        canvas.create_image(90,10,image=bg,anchor="nw")
+work = tk.Button(text="Work", command=work_clock,bg="blue",fg="white",bd=4,font=("arial",18,"bold")).place(x=50, y=220)
+take_a_break = tk.Button(text="Break", command=break_clock,bg="blue",fg="white",bd=4,font=("arial",18,"bold")).place(x=160, y=220)
 
-        #create three buttons with countdown function command
-        btn_work = tk.Button(self.root,text="Start",bd=5,command=self.work,bg="red",font=("arial",15,"bold")).place(x=140,y=380)
-        btn_break = tk.Button(self.root,text="Break",bd=5,command=self.break_,bg="red",font=("arial",15,"bold")).place(x=240,y=380)
-
-        self.root.mainloop()
-
-if __name__ == '__main__':
-    pomo = Pomodoro(tk.Tk())
-    pomo.main()
+root.mainloop()
